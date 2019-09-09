@@ -206,8 +206,8 @@ if __name__ == "__main__":
                         step_feed_dict = {model.x_holder: training_st_array,
                                           model.R_plus_plus1_v_holder: training_policy_target_array,
                                           model.actions_y_holder: training_action_array,
-                                          model.rt_holder:training_rt_array,
-                                          model.st_p1_holder:training_st_p1_array}
+                                          model.rt_holder: training_rt_array,
+                                          model.st_p1_holder: training_st_p1_array}
 
                         # encoder_output_real = sess.run(encoder_output, feed_dict=step_feed_dict)
                         # print("encoder_output_real:", encoder_output_real.shape)
@@ -216,12 +216,15 @@ if __name__ == "__main__":
                         print("V_value_real:", V_value_real)
                         # print("total_training_end!!")
 
-                        _, actor_loss_real, critic_loss_real, total_loss_real, advantage_real, summary = sess.run(
+                        _, actor_loss_real, critic_loss_real, total_loss_real, advantage_real, top_VQ_w, bottom_VQ_w,\
+                        summary = sess.run(
                             [model.total_training_op, model.actor_loss, model.critic_loss, model.total_loss,
-                             model.advantage, merged_summary_op],
+                             model.advantage, model.bottom_VQ_assign_moving_avg_op, model.top_VQ_assign_moving_avg_op,
+                             merged_summary_op],
                             feed_dict=step_feed_dict
                         )
-                        print("advantage_real:", advantage_real)
+                        print(".embedding_total_count:", top_VQ_w[1])
+                        # print("advantage_real:", advantage_real)
 
                         summary_writer.add_summary(summary, global_step=update_times)
 
@@ -250,5 +253,6 @@ if __name__ == "__main__":
                     break
 
             # Save the variables to disk.
-            save_path = saver.save(sess, "./A2C_multitask/model/breakout_A2C_one_loss_model.ckpt", global_step=i_episode)
+            save_path = saver.save(sess, "./A2C_multitask/model/breakout_A2C_one_loss_model.ckpt",
+                                   global_step=i_episode)
             print("Model saved in path: %s" % save_path)
