@@ -13,7 +13,7 @@ import RL_model
 
 if __name__ == "__main__":
 
-    logs_path = "./A2C_multitask/tf_log/"
+    logs_path = "./A2C_multitask/tf_log"
 
     critic_loss_history = []
     actor_loss_history = []
@@ -112,7 +112,7 @@ if __name__ == "__main__":
                 training_step = step - ((TD_traj_leng - 1 + 1))
                 # seq_size + TD_traj_leng - 1, -1 for TD cummulating, +1 for states+1
 
-                env.render()
+                # env.render()
 
                 # # temp include st, at, rt, st+1
                 temp = {"st": observation}  # temp append st
@@ -234,8 +234,8 @@ if __name__ == "__main__":
                         del training_policy_target[:batch_size]
                         del training_action[:batch_size]
                         del training_st[:batch_size]
+                        del training_rt[:batch_size]
                         del training_st_p1[:batch_size]
-
                         # sess.run(noisy_net_ops)
 
                 # gc.collect()
@@ -250,5 +250,5 @@ if __name__ == "__main__":
                     break
 
             # Save the variables to disk.
-            save_path = saver.save(sess, "./A2C_multitask/breakout_A2C_one_loss_model.ckpt", global_step=i_episode)
+            save_path = saver.save(sess, "./A2C_multitask/model/breakout_A2C_one_loss_model.ckpt", global_step=i_episode)
             print("Model saved in path: %s" % save_path)
