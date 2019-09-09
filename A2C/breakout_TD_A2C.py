@@ -162,9 +162,12 @@ if __name__ == "__main__":
                     policy_target = 0.0
 
                     if not inner_train_sample_buffer[-1]["done"]:
+                        print("inner_train_sample_buffer[-1]['p1_st'].reshape([-1, 210, 160, 1]):",
+                              inner_train_sample_buffer[-1]["p1_st"].reshape([-1, 210, 160, 1]).shape)
                         policy_target = sess.run(model.V_value, feed_dict={
                             model.x_holder: inner_train_sample_buffer[-1]["p1_st"].reshape(
                                 [-1, 210, 160, 1])})[0][0]  # plus1 state value
+
 
                     critic_targets = []
                     actions = []
@@ -201,7 +204,7 @@ if __name__ == "__main__":
                         # print("encoder_output_real:", encoder_output_real.shape)
 
                         V_value_real = sess.run([model.V_value], feed_dict=step_feed_dict)
-                        print("V_value_real:",V_value_real)
+                        print("V_value_real:",V_value_real[0].shape)
                         # print("total_training_end!!")
 
                         _, actor_loss_real, critic_loss_real, total_loss_real, advantage_real, summary = sess.run(

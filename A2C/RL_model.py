@@ -164,40 +164,81 @@ class RL_model:
         layer_count += 1
         h3 = conv(h2, 64, 3, 1, gain)
         layer_count += 1
-        encoder_output_flat = tf.layers.flatten(h3)
+        # encoder_output_flat = tf.layers.flatten(h3)
+        encoder_output_flat = h3
 
         return encoder_output_flat
 
-    def actor_net(self, encoder_output_flat):  # num_step = seq_size
+    # def actor_net(self, encoder_output_flat):  # num_step = seq_size
+    #
+    #     gain = 1.0
+    #
+    #     h_nn3 = tf.layers.dense(inputs=encoder_output_flat, units=512, activation=tf.nn.relu,
+    #                             kernel_initializer=tf.orthogonal_initializer(gain), name="actor_net_dense3",
+    #                             reuse=tf.AUTO_REUSE)
+    #
+    #     # nn layer 4
+    #     logits = tf.layers.dense(h_nn3, 4, use_bias=True,
+    #                              name="actor_net_dense4",
+    #                              reuse=tf.AUTO_REUSE)
+    #
+    #     print("logits:", logits)
+    #
+    #     return logits
 
-        gain = 1.0
+    def actor_net(self, encoder_output):  # num_step = seq_size
 
-        h_nn3 = tf.layers.dense(inputs=encoder_output_flat, units=512, activation=tf.nn.relu,
-                                kernel_initializer=tf.orthogonal_initializer(gain), name="actor_net_dense3",
-                                reuse=tf.AUTO_REUSE)
+        logits = tf.keras.layers.Conv2D(32, kernel_size=3, strides=1, padding="SAME", activation="sigmoid",
+                                        kernel_initializer=tf.keras.initializers.glorot_normal())(encoder_output)
 
-        # nn layer 4
-        logits = tf.layers.dense(h_nn3, 4, use_bias=True,
-                                 name="actor_net_dense4",
-                                 reuse=tf.AUTO_REUSE)
+        logits_shape = logits.shape.as_list()
+
+        logits = tf.keras.layers.Conv2D(4, kernel_size=[logits_shape[1], logits_shape[2]],
+                                        strides=1,
+                                        kernel_initializer=tf.keras.initializers.glorot_normal(), activation="sigmoid")(logits)
+
+        logits = tf.reshape(logits, [-1, 4])
 
         print("logits:", logits)
 
         return logits
+    #
+    # def critic_net(self, encoder_output_flat):  # num_step = seq_size
+    #
+    #     gain = 1.0
+    #
+    #     h_nn3 = tf.layers.dense(inputs=encoder_output_flat, units=512, activation=tf.nn.relu,
+    #                             kernel_initializer=tf.orthogonal_initializer(gain), name="critic_net_dense3",
+    #                             reuse=tf.AUTO_REUSE)
+    #
+    #     # nn layer 4
+    #     V_value = tf.layers.dense(h_nn3, 1,
+    #                               kernel_initializer=tf.orthogonal_initializer(gain),
+    #                               name="critic_net_dense4",
+    #                               reuse=tf.AUTO_REUSE)
+    #
+    #     print("V_value:", V_value)
+    #
+    #     return V_value
 
-    def critic_net(self, encoder_output_flat):  # num_step = seq_size
 
-        gain = 1.0
+    def critic_net(self, encoder_output):  # num_step = seq_size
 
-        h_nn3 = tf.layers.dense(inputs=encoder_output_flat, units=512, activation=tf.nn.relu,
-                                kernel_initializer=tf.orthogonal_initializer(gain), name="critic_net_dense3",
-                                reuse=tf.AUTO_REUSE)
+        V_value = tf.keras.layers.Conv2D(32, kernel_size=3, strides=1, padding="SAME", activation="sigmoid",
+                                         kernel_initializer=tf.keras.initializers.glorot_normal())(encoder_output)
 
-        # nn layer 4
-        V_value = tf.layers.dense(h_nn3, 1,
-                                  kernel_initializer=tf.orthogonal_initializer(gain),
-                                  name="critic_net_dense4",
-                                  reuse=tf.AUTO_REUSE)
+        logits_shape = V_value.shape.as_list()
+        print("logits_shape:",logits_shape)
+        kernel_size = [logits_shape[1], logits_shape[2]]
+        print("kernel_size:",kernel_size)
+
+        V_value = tf.keras.layers.Conv2D(1, kernel_size=kernel_size,
+                                         strides=1,
+                                         kernel_initializer=tf.keras.initializers.glorot_normal(), activation="sigmoid")(V_value)
+
+        print("V_value shape:",V_value.shape.as_list())
+
+        V_value = tf.reshape(V_value, [-1, 1])
 
         print("V_value:", V_value)
 
