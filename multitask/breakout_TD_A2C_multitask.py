@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     batch_size = 32
 
-    filter_num = 2
+    filter_num = 16
 
     TD_traj_leng = 5  # actually past design is TD 1, now I assign it to estimate more step
 
@@ -90,9 +90,10 @@ if __name__ == "__main__":
             train_buffer = []
             TD_N_reward = []
             training_policy_target = []
+            training_action_prob = []
             training_action = []
             training_st = []
-            training_st_p1 = []
+            training_p1_st = []
             training_rt = []
 
             # start a round
@@ -154,6 +155,7 @@ if __name__ == "__main__":
 
                 temp["rt"] = reward
                 temp["at"] = action_one_hot
+                temp["at_prob"] = action_prob[0]
                 temp["done"] = done
                 temp["p1_st"] = p1_observation
 
@@ -182,32 +184,36 @@ if __name__ == "__main__":
 
                     TD_N_reward.append(training_reward)
                     training_policy_target.append(policy_target)
+                    training_action_prob.append(inner_train_sample_buffer[-(TD_traj_leng)]["at_prob"])
                     training_action.append(inner_train_sample_buffer[-(TD_traj_leng)]["at"])
                     training_st.append(inner_train_sample_buffer[-(TD_traj_leng)]["st"])
                     training_rt.append(inner_train_sample_buffer[-(TD_traj_leng)]["rt"])
-                    training_st_p1.append(inner_train_sample_buffer[-1]["p1_st"])
+                    training_p1_st.append(inner_train_sample_buffer[-1]["p1_st"])
 
                     if len(training_policy_target) == 2 * batch_size or done == 1:
                         TD_N_reward_array = np.array(TD_N_reward[-batch_size:]).reshape(-1, 1)
                         training_policy_target_array = np.array(training_policy_target[-batch_size:]).reshape(-1, 1)
+                        training_action_prob_array = np.array(training_action_prob[-batch_size:])
                         training_action_array = np.array(training_action[-batch_size:])
                         training_st_array = np.array(training_st[-batch_size:])
                         training_rt_array = np.array(training_rt[-batch_size:]).reshape(-1, 1)
-                        training_st_p1_array = np.array(training_st_p1[-batch_size:])
+                        training_p1_st_array = np.array(training_p1_st[-batch_size:])
                         print("TD_N_reward:", TD_N_reward_array.shape)
                         print("training_policy_target_array :", training_policy_target_array.shape)
+                        print("training_action_prob_array:",training_action_prob_array.shape)
                         print("training_action:", training_action_array.shape)
                         print("training_st:", training_st_array.shape)
                         print("training_rt_array:", training_rt_array.shape)
-                        print("training_st_p1_array:", training_st_p1_array.shape)
+                        print("training_p1_st_array:", training_p1_st_array.shape)
 
                         # sess.run(noisy_net_ops)
 
                         step_feed_dict = {model.x_holder: training_st_array,
                                           model.R_plus_plus1_v_holder: training_policy_target_array,
+                                          model.actions_prob_holder: training_action_prob_array,
                                           model.actions_y_holder: training_action_array,
                                           model.rt_holder: training_rt_array,
-                                          model.st_p1_holder: training_st_p1_array}
+                                          model.p1_st_holder: training_p1_st_array}
 
                         # encoder_output_real = sess.run(encoder_output, feed_dict=step_feed_dict)
                         # print("encoder_output_real:", encoder_output_real.shape)
@@ -216,14 +222,14 @@ if __name__ == "__main__":
                         print("V_value_real:", V_value_real)
                         # print("total_training_end!!")
 
-                        _, actor_loss_real, critic_loss_real, total_loss_real, advantage_real, top_VQ_w, bottom_VQ_w,\
+                        _, actor_loss_real, critic_loss_real, total_loss_real, advantage_real,\
                         summary = sess.run(
                             [model.total_training_op, model.actor_loss, model.critic_loss, model.total_loss,
-                             model.advantage, model.bottom_VQ_assign_moving_avg_op, model.top_VQ_assign_moving_avg_op,
+                             model.advantage,
                              merged_summary_op],
                             feed_dict=step_feed_dict
                         )
-                        print(".embedding_total_count:", top_VQ_w[1])
+                        # print(".embedding_total_count:", top_VQ_w[1])
                         # print("advantage_real:", advantage_real)
 
                         summary_writer.add_summary(summary, global_step=update_times)
@@ -235,10 +241,11 @@ if __name__ == "__main__":
 
                         del TD_N_reward[:batch_size]
                         del training_policy_target[:batch_size]
+                        del training_action_prob[:batch_size]
                         del training_action[:batch_size]
                         del training_st[:batch_size]
                         del training_rt[:batch_size]
-                        del training_st_p1[:batch_size]
+                        del training_p1_st[:batch_size]
                         # sess.run(noisy_net_ops)
 
                 # gc.collect()

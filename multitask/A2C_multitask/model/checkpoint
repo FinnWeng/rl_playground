@@ -1,0 +1,2 @@
+model_checkpoint_path: "breakout_A2C_one_loss_model.ckpt-494"
+all_model_checkpoint_paths: "breakout_A2C_one_loss_model.ckpt-494"
