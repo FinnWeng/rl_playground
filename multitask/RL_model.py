@@ -34,7 +34,8 @@ class RL_model:
 
         self.training_status = True
 
-        self.beta = 0.5
+        self.beta = 0.2
+        self.rl_coef = 0.1
 
         self.kernel = tf.keras.initializers.glorot_normal()
 
@@ -129,7 +130,7 @@ class RL_model:
         # VQ_loss = tf.reduce_mean(self.top_VQ_loss + self.bottom_VQ_loss)
 
 
-        total_loss = actor_loss - entropy * self.ent_coef + critic_loss * self.vf_coef + (1-self.beta)*inverse_loss + (self.beta)*forward_loss
+        total_loss = self.rl_coef*(actor_loss - entropy * self.ent_coef + critic_loss * self.vf_coef) + (1-self.beta)*inverse_loss + (self.beta)*forward_loss
         # cross_entropy is minimize,  - entropy is minimize, critic loss is minimize
 
         optimizer = tf.train.AdamOptimizer(self.training_LR, name="adam")

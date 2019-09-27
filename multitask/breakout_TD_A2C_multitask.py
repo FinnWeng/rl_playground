@@ -11,6 +11,16 @@ import pprint
 
 import RL_model
 
+
+def env_n_step(env,action,n_step):
+    reward = 0
+    for i in range(n_step):
+        observation, reward_one_step, done, info = env.step(action)  # get result of action
+        reward += reward_one_step
+        if done == True:
+            break
+    return observation,reward,done,info
+
 if __name__ == "__main__":
 
     logs_path = "./A2C_multitask/tf_log"
@@ -22,7 +32,7 @@ if __name__ == "__main__":
     replay_buffer = []
 
     # use which GPU device
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
     env = gym.make('Breakout-v0')
 
@@ -40,7 +50,7 @@ if __name__ == "__main__":
 
     update_times = 0
 
-    training_LR = 1e-6
+    training_LR = 1e-3
 
     ent_coef = 0.0005
 
@@ -61,7 +71,10 @@ if __name__ == "__main__":
     merged_summary_op = tf.summary.merge(learning_figures)
     episode_reward_summary_op = tf.summary.merge([tf.summary.scalar("episode_reward", model.episode_reward_holder)])
 
-    with tf.Session() as sess:
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+
+    with tf.Session(config = config) as sess:
 
         # train in firsttime
         sess.run(init)
@@ -144,10 +157,16 @@ if __name__ == "__main__":
                 print("action", action)
 
                 action_one_hot[action] = 1  # turn predict prob to one hot
-                observation, reward, done, info = env.step(action)  # get result of action
-                observation = observation[1:209, :, :]
-                observation = sess.run([model.gray_img_output], feed_dict={model.input_state: observation})[0]
-                p1_observation = observation
+                
+                # one step
+                # observation, reward, done, info = env.step(action)  # get result of action
+                
+                # 4 step
+                p1_observation, reward, done, info = env_n_step(env,action,n_step=4) #
+
+                p1_observation = p1_observation[1:209, :, :]
+                p1_observation = sess.run([model.gray_img_output], feed_dict={model.input_state: p1_observation})[0]
+                observation = p1_observation
 
                 episode_reward += reward
 
