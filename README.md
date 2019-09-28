@@ -1,4 +1,6 @@
-# About RL Playground
+# Welcome to RL playground!
+
+## About RL Playground
 
 This playground is to record some result and tips from my experiment.
 
@@ -16,7 +18,7 @@ So by this insight, my implementations contain several modules:
 
 3. Module: like "octave_module". Some handy implementation.
 
-# Implementation Detail
+## Implementation Detail
 
 The hardest part is how to compute the reward correctly. The design must rightly deal with reward, timing of training, end of game. 
 The second one is the policy gradient loss. It is very different from the loss we use every day.
@@ -40,7 +42,7 @@ By all the tips and correct implementation, I take a month to train. It performs
 
 For now, I try curiosity model to accelerate the training process.
 
-# Experiment Result
+## Experiment Result
 
 TODO
 
