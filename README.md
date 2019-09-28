@@ -1,20 +1,12 @@
-# rl_playground
+# About RL Playground
 
 This playground is to record some result and tips from my experiment.
 
-
-
 The name of Reinforcemnet Learning is quite comfusing. 
-
 For me, I see "learning" as infrastructure, which not necessarily contains neural network.
-
-Deep "learning" is simple one. 
-
-Reinforcemnet Learning is complex one which combines HMM.
-
-Self-supervised learning is using multi-task trick to enhance model ability.
-
-
+* Deep "learning" is simple one. 
+* Reinforcemnet Learning is complex one which combines HMM.
+* Self-supervised learning is using multi-task trick to enhance model ability.
 
 So by this insight, my implementations contain several modules:
 
@@ -24,7 +16,7 @@ So by this insight, my implementations contain several modules:
 
 3. Module: like "octave_module". Some handy implementation.
 
-
+# Implementation Detail
 
 The hardest part is how to compute the reward correctly. The design must rightly deal with reward, timing of training, end of game. 
 The second one is the policy gradient loss. It is very different from the loss we use every day.
@@ -47,6 +39,10 @@ For me, there's severly tips to deal with conditions that model is broken.
 By all the tips and correct implementation, I take a month to train. It performs not particular good. But it indeed learned how to catch the ball.
 
 For now, I try curiosity model to accelerate the training process.
+
+# Experiment Result
+
+TODO
 
 
 
