@@ -10,13 +10,13 @@ For me, I see "learning" as infrastructure, which not necessarily contains neura
 * Reinforcemnet Learning is complex one which combines HMM.
 * Self-supervised learning is using multi-task trick to enhance model ability.
 
-So by this insight, my implementations contain several modules:
+So by this insight, my implementation contains several modules:
 
-1. Main: the "Break_out_TD_A2C". The most important implementation. It defines how the model been trained, the training method is exactly the "algorithm of reinforcement.
+1. Main: the "Break_out_TD_A2C". The most important implementation. It defines how the model been trained, the training method is exactly the "algorithm of Reinforcement Learning".
 
-2. Model: the "RL_model". Some neural network implementation. Could be as easy as several CNN layers. Or could contain complex implementation of curious-driven unit.
+2. Model: the "RL_model". Neural network model implementation. It could be as easy as several CNN layers. Or contains complex implementation of curious-driven unit.
 
-3. Module: like "octave_module". Some handy implementation.
+3. Module: like "octave_module". Some handy implementations are here.
 
 ## Implementation Detail
 
@@ -25,7 +25,7 @@ The second one is the policy gradient loss. It is very different from the loss w
 
  
 Even I implement above all correctly, still I can't promise it will work perfectly for every case.
-For me, there's severly tips to deal with conditions that model is broken.
+For me, there's several tips to deal with conditions that model is broken.
 
 1. If all probability of action stuck for every frame in the end: decrease the learning rate.
 
@@ -36,6 +36,8 @@ For me, there's severly tips to deal with conditions that model is broken.
 4. The losses of actor and critic explain few.
 
 5. The advantage should be sometimes positive, sometimes negative.
+
+6. All elements in loss function should be given a proper coefficient. Look carefully how loss change, and adjust them. For my experience, try and error is the only way. 
 
 
 By all the tips and correct implementation, I take a month to train. It performs not particular good. But it indeed learned how to catch the ball.
