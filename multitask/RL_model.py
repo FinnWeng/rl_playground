@@ -35,7 +35,7 @@ class RL_model:
         self.training_status = True
 
         self.beta = 0.2
-        self.rl_coef = 0.1
+        self.rl_coef = 0.5
 
         self.kernel = tf.keras.initializers.glorot_normal()
 

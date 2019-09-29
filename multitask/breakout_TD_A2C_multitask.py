@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     update_times = 0
 
-    training_LR = 1e-3
+    training_LR = 1e-5
 
     ent_coef = 0.0005
 
