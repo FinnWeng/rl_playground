@@ -23,8 +23,17 @@ So by this insight, my implementation contains several modules:
 The hardest part is how to compute the reward correctly. The design must rightly deal with reward, timing of training, end of game. 
 The second one is the policy gradient loss. It is very different from the loss we use every day.
 
+Here's explain of my implementation by image:
+
+![alt text](https://github.com/FinnWeng/rl_playground/blob/master/common/model_image/RL_A2C_TD_structure.PNG "A2C TD")
+
+For now, I try curiosity model to accelerate the training process:
+
+![alt text](https://github.com/FinnWeng/rl_playground/blob/master/common/model_image/RL_A2C_TD_Curious_structure.PNG "A2C TD Curious")
+
+
  
-Even I implement above all correctly, still I can't promise it will work perfectly for every case.
+####But#### ,Even I implement above all correctly, still I can't promise it will work perfectly for every case.
 For me, there's several tips to deal with conditions that model is broken.
 
 1. If all probability of action stuck for every frame in the end: decrease the learning rate.
@@ -42,7 +51,7 @@ For me, there's several tips to deal with conditions that model is broken.
 
 By all the tips and correct implementation, I take a month to train. It performs not particular good. But it indeed learned how to catch the ball.
 
-For now, I try curiosity model to accelerate the training process.
+
 
 ## Experiment Result
 
