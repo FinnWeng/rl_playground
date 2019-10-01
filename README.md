@@ -55,7 +55,11 @@ By all the tips and correct implementation, I take a month to train. It performs
 
 ## Experiment Result
 
-TODO
+Here's the result of A2C model:
+
+![alt text](https://github.com/FinnWeng/rl_playground/blob/master/common/results/A2C_old.gif "A2C TD result")
+
+
 
 
 
