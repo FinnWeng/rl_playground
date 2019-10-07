@@ -25,10 +25,6 @@ if __name__ == "__main__":
 
     logs_path = "./A2C_multitask/tf_log"
 
-    critic_loss_history = []
-    actor_loss_history = []
-    neg_entropy_history = []
-
     replay_buffer = []
 
     # use which GPU device
@@ -50,7 +46,8 @@ if __name__ == "__main__":
 
     update_times = 0
 
-    training_LR = 1e-5
+    training_LR = 1e-7
+    # training_LR = [[10000,100000],[1e-4,1e-5,1e-6]]
 
     ent_coef = 0.0005
 
@@ -78,7 +75,7 @@ if __name__ == "__main__":
 
         # train in firsttime
         sess.run(init)
-        saver = tf.train.Saver(tf.global_variables(), max_to_keep=1)
+        saver = tf.train.Saver(tf.global_variables(), max_to_keep=10)
 
         # # # keep training
         # saver = tf.train.Saver(max_to_keep=1)
@@ -157,6 +154,7 @@ if __name__ == "__main__":
                 print("action", action)
 
                 action_one_hot[action] = 1  # turn predict prob to one hot
+                
                 
                 # one step
                 # observation, reward, done, info = env.step(action)  # get result of action
@@ -241,9 +239,9 @@ if __name__ == "__main__":
                         print("V_value_real:", V_value_real)
                         # print("total_training_end!!")
 
-                        _, actor_loss_real, critic_loss_real, total_loss_real, advantage_real,\
+                        _, policy_gradient_loss_real, critic_loss_real, total_loss_real, advantage_real,\
                         summary = sess.run(
-                            [model.total_training_op, model.actor_loss, model.critic_loss, model.total_loss,
+                            [model.total_training_op, model.policy_gradient_loss, model.critic_loss, model.total_loss,
                              model.advantage,
                              merged_summary_op],
                             feed_dict=step_feed_dict

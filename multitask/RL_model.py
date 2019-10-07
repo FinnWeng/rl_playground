@@ -1,4 +1,4 @@
-import gym
+
 import tensorflow as tf
 import numpy as np
 import octave_module
@@ -18,6 +18,9 @@ class RL_model:
         self.TD_traj_leng = TD_traj_leng  # actually past design is TD 1, now I assign it to estimate more step
 
         self.discount_rate = discount_rate
+        
+        # global_step = tf.Variable(0, trainable=False)
+        # self.training_LR = tf.train.piecewise_constant_decay(global_step,training_LR[0],training_LR[1])
 
         self.training_LR = training_LR
 
@@ -69,7 +72,7 @@ class RL_model:
         p1_st_encoder_output = self.encoder_net(p1_st_holder)  # (-1,210,160,3) feed an array of images, -1 = batch_size
 
         logits = self.actor_net(encoder_output)  # (batch_size,4 actions)
-        prediction_prob = tf.add(tf.nn.softmax(logits), 1e-8)  # (batch_size,4 prob)
+        prediction_prob = tf.add(tf.nn.softmax(logits,axis=1), 1e-8)  # (batch_size,4 prob)
 
         print("prediction_prob:", prediction_prob.shape)
 
@@ -99,10 +102,23 @@ class RL_model:
         entropy = -tf.reduce_sum(prediction_prob * tf.log(prediction_prob),
                                  name="entropy")  # batchsize, 1
 
+        
+        # actor_cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,labels=tf.argmax(actions_y_holder, axis=1))
         neglogpac = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,
                                                                    labels=tf.argmax(actions_y_holder, axis=1))
 
+        
+        # softmax_value = -tf.reduce_max(tf.log(tf.nn.softmax(logits,axis=-1,name="softmax_test")*actions_y_holder),axis=-1)
+        # softmax_value = tf.reduce_mean(softmax_value)
+        # neglogpac = -tf.reduce_max(tf.log(tf.nn.softmax(logits,axis=-1,name="softmax_test")*actions_y_holder),axis=-1) # exactly the same with cross-entropy
+        neglogpac = -tf.log(tf.reduce_max(tf.nn.softmax(logits,axis=-1,name="softmax_test")*actions_y_holder,axis=-1))
+
         advantage = R_plus_plus1_v_holder - V_value
+        
+        print("advantage:",advantage)
+        print("neglogpac:",neglogpac)
+        print("R_plus_plus1_v_holder:",R_plus_plus1_v_holder)
+        print("value:", V_value)
 
 
 
@@ -119,7 +135,10 @@ class RL_model:
         # define losses
         ###############################################
 
-        actor_loss = tf.reduce_mean(advantage * neglogpac)  # policy_gradient_loss
+        # actor_loss = tf.reduce_mean(actor_cross_entropy)  # policy_gradient_loss
+        
+        policy_gradient_loss = tf.reduce_mean(advantage * neglogpac)  # policy_gradient_loss
+        print("policy_gradient_loss:",policy_gradient_loss)
 
         critic_loss = tf.losses.mean_squared_error(R_plus_plus1_v_holder,
                                                    V_value)
@@ -130,7 +149,7 @@ class RL_model:
         # VQ_loss = tf.reduce_mean(self.top_VQ_loss + self.bottom_VQ_loss)
 
 
-        total_loss = self.rl_coef*(actor_loss - entropy * self.ent_coef + critic_loss * self.vf_coef) + (1-self.beta)*inverse_loss + (self.beta)*forward_loss
+        total_loss = self.rl_coef*(policy_gradient_loss - entropy * self.ent_coef + critic_loss * self.vf_coef) + (1-self.beta)*inverse_loss + (self.beta)*forward_loss
         # cross_entropy is minimize,  - entropy is minimize, critic loss is minimize
 
         optimizer = tf.train.AdamOptimizer(self.training_LR, name="adam")
@@ -144,12 +163,18 @@ class RL_model:
         min_V_value = tf.reduce_min(V_value)
         avg_V_value = tf.reduce_mean(V_value)
 
-        summary_figure = [tf.summary.scalar("actor_loss", actor_loss),
+        summary_figure = [
                           tf.summary.scalar("critic_loss", critic_loss),
                           tf.summary.scalar("inverse_loss", inverse_loss),
                           tf.summary.scalar("forward_loss", forward_loss),
                           tf.summary.scalar("entropy", entropy),
-                          tf.summary.histogram("actor_loss_hist", actor_loss),
+                          tf.summary.scalar("polycy_gradient_loss",policy_gradient_loss),
+                          tf.summary.scalar("neglogpac_mean",tf.reduce_mean(neglogpac)),
+                    
+                        #   tf.summary.scalar("softmax_value_for_test:",softmax_value),
+                        #   tf.summary.scalar("softmax_for_verification",tf.reduce_mean(softmax_for_verification)),
+                        #   tf.summary.scalar("crossentropy_for_verification",tf.reduce_mean(crossentropy_for_verification)),
+
                           tf.summary.histogram("critic_loss_hist", critic_loss),
                           tf.summary.histogram("inverse_loss_hist", inverse_loss),
                           tf.summary.histogram("forward_loss_hist", forward_loss),
@@ -178,7 +203,7 @@ class RL_model:
         self.V_value = V_value
         self.prediction_prob = prediction_prob
         self.advantage = advantage
-        self.actor_loss = actor_loss
+        self.policy_gradient_loss = policy_gradient_loss
         self.critic_loss = critic_loss
         self.total_loss = total_loss
 
@@ -342,4 +367,37 @@ class CoordConv2D:
             return input
 
 
+    
 
+if __name__ == "__main__":
+
+    logs_path = "./A2C_multitask/tf_log"
+
+    critic_loss_history = []
+    neg_entropy_history = []
+
+    replay_buffer = []
+
+    seq_size = 4  # MUST greater than 2. How many past states should we look for decide an action
+
+    baseline = 0.0
+
+    batch_size = 32
+
+    filter_num = 16
+
+    TD_traj_leng = 5  # actually past design is TD 1, now I assign it to estimate more step
+
+    discount_rate = 0.99
+
+    update_times = 0
+
+    training_LR = 1e-5
+
+    ent_coef = 0.0005
+
+    vf_coef = 2
+
+    input_shape = [None, 208, 160, 1]
+    model = RL_model(input_shape, seq_size, baseline, batch_size, filter_num, TD_traj_leng, discount_rate,
+                              training_LR, ent_coef, vf_coef)
