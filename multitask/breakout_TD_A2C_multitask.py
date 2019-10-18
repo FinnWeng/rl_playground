@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     batch_size = 32
 
-    filter_num = 16
+    filter_num = 8
 
     TD_traj_leng = 5  # actually past design is TD 1, now I assign it to estimate more step
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     update_times = 0
 
-    training_LR = 1e-7
+    training_LR = 1e-6
     # training_LR = [[10000,100000],[1e-4,1e-5,1e-6]]
 
     ent_coef = 0.0005
@@ -71,11 +71,13 @@ if __name__ == "__main__":
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
 
+    saver = tf.train.Saver(tf.global_variables(), max_to_keep=10)
+
     with tf.Session(config = config) as sess:
 
         # train in firsttime
         sess.run(init)
-        saver = tf.train.Saver(tf.global_variables(), max_to_keep=10)
+        
 
         # # # keep training
         # saver = tf.train.Saver(max_to_keep=1)
